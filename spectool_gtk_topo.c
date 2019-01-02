@@ -473,7 +473,7 @@ static void spectool_topo_init(SpectoolTopo *topo) {
 	wwidget->sweep_num_aggregate = 1;
 
 	wwidget->hlines = 8;
-	wwidget->base_db_offset = -50;
+	//wwidget->base_db_offset = -50; // Patch: commented this out (it should be unnecessary)
 
 	wwidget->graph_title = strdup("<b>Topo View</b>");
 	wwidget->graph_title_bg = strdup("#CC00CC");

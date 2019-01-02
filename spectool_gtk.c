@@ -84,6 +84,7 @@ typedef struct _wg_aux {
 typedef struct _nb_aux {
 	GtkWidget *nbvbox, *nodev_vbox;
 	GtkWidget *nblabel;
+	GtkWidget *mindbm_gtk, *maxdbm_gtk; // Patch
 	wg_aux *auxptr;
 
 	GtkWidget *planar, *spectral, *topo, *channel;
@@ -103,8 +104,20 @@ static nb_aux *build_nb_page(GtkWidget *notebook, wg_aux *auxptr);
 
 static void main_devopen(int slot, void *aux) {
 	nb_aux *nbaux = (nb_aux *) aux;
+	dbmranges range; // Patch
 
 	g_return_if_fail(aux != NULL);
+
+	// Patch: read the dBm ranges from the GUI
+	range.min=atoi(gtk_combo_box_text_get_active_text(nbaux->mindbm_gtk));
+	range.max=atoi(gtk_combo_box_text_get_active_text(nbaux->maxdbm_gtk));
+
+	// Patch: a new function spectool_widget_set_ranges accepts as parameters the GtkWidget and
+	//  a dbmranges structure (defined in spectool_container.h)
+	spectool_widget_set_ranges(nbaux->planar,range); // Patch
+	spectool_widget_set_ranges(nbaux->topo,range); // Patch
+	spectool_widget_set_ranges(nbaux->spectral,range); // Patch
+	spectool_widget_set_ranges(nbaux->channel,range); // Patch
 
 	spectool_widget_bind_dev(nbaux->planar, nbaux->auxptr->wdr, slot);
 	spectool_widget_bind_dev(nbaux->topo, nbaux->auxptr->wdr, slot);
@@ -247,7 +260,14 @@ static void close_nb_button(GtkWidget *widget, gpointer *aux) {
 static nb_aux *build_nb_page(GtkWidget *notebook, wg_aux *auxptr) {
 	nb_aux *nbaux = (nb_aux *) malloc(sizeof(nb_aux));
 	GtkWidget *temp, *hbox, *arrow, *closebutton, *closeicon;
-
+	// Patch: minimum dBm values allowed (it is sufficient to change this in order to add new admitted values)
+	//  Valid values: from -100 to -70
+	const char *mindBm[] = {"-100", "-95", "-90"};
+	// Patch: maximum dBm values allowed (it is sufficient to change this in order to add new admitted values)
+	//  Valid values: from -50 to 0
+	const char *maxdBm[] = {"-50","-40","-30","-20","-10"}; 
+	// Patch: index to iterate through the previously defined arrays
+	int i;
 	nbaux->auxptr = auxptr;
 
 	/* Default label for the tab, packed into a hbox */
@@ -305,6 +325,46 @@ static nb_aux *build_nb_page(GtkWidget *notebook, wg_aux *auxptr) {
 							 nbaux);
 	gtk_box_pack_start(GTK_BOX(nbaux->nodev_vbox), temp, FALSE, FALSE, 2);
 	gtk_widget_show(temp);
+
+	// Patch: adding combo box for setting minimum dBm value
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(nbaux->nodev_vbox), hbox, FALSE, FALSE, 2);
+
+	temp = gtk_label_new("Minimum dBm value (default: -95 dBm): ");
+	gtk_box_pack_start(GTK_BOX(hbox), temp, FALSE, FALSE, 2);
+	gtk_widget_show(temp);
+
+	nbaux->mindbm_gtk = gtk_combo_box_text_new();
+
+	gtk_box_pack_start(GTK_BOX(hbox), nbaux->mindbm_gtk, FALSE, FALSE, 2);
+	for (i=0; i<G_N_ELEMENTS(mindBm); i++) {
+  		gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(nbaux->mindbm_gtk), mindBm[i]);
+  	}
+
+  	gtk_combo_box_set_active(GTK_COMBO_BOX(nbaux->mindbm_gtk), 1); // -95 dBm is the default value
+	gtk_widget_show(nbaux->mindbm_gtk);
+
+	gtk_widget_show(hbox);
+
+	// Patch: adding combo box for setting maximum dBm value
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(nbaux->nodev_vbox), hbox, FALSE, FALSE, 2);
+
+	temp = gtk_label_new("Maximum dBm value (default: -50 dBm): ");
+	gtk_box_pack_start(GTK_BOX(hbox), temp, FALSE, FALSE, 2);
+	gtk_widget_show(temp);
+
+	nbaux->maxdbm_gtk = gtk_combo_box_text_new();
+
+	gtk_box_pack_start(GTK_BOX(hbox), nbaux->maxdbm_gtk, FALSE, FALSE, 2);
+	for (i=0; i<G_N_ELEMENTS(maxdBm); i++) {
+  		gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(nbaux->maxdbm_gtk), maxdBm[i]);
+  	}
+
+  	gtk_combo_box_set_active(GTK_COMBO_BOX(nbaux->maxdbm_gtk), 0); // -50 dBm is the default value
+	gtk_widget_show(nbaux->maxdbm_gtk);
+
+	gtk_widget_show(hbox);
 
 	/*
 	temp = gtk_button_new_with_label("Close Tab");
@@ -409,7 +469,7 @@ int main(int argc, char *argv[]) {
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-	gtk_window_set_title(GTK_WINDOW(window), "WiSPY");
+	gtk_window_set_title(GTK_WINDOW(window), "WiSPY (Patch)"); // Patch: now the title shows that this is a patched version
 
 	gtk_window_set_default_size(GTK_WINDOW(window), 750, 650);
 

@@ -122,10 +122,14 @@ static void spectool_widget_wdr_sweep(int slot, int mode,
 			SPECTOOL_RSSI_CONVERT(wwidget->amp_offset_mdbm, wwidget->amp_res_mdbm,
 							   spectool_phy_getcurprofile(wwidget->phydev)->rssi_max);
 							   */
-		wwidget->base_db_offset = -50;
-		// wwidget->min_db_draw = SPECTOOL_RSSI_CONVERT(wwidget->amp_offset_mdbm, wwidget->amp_res_mdbm, 0);
-		// printf("debug - min db draw %d\n", wwidget->min_db_draw);
-		wwidget->min_db_draw = -95;
+		// Patch: now dBm draw and offset are set from the GUI
+		wwidget->base_db_offset = wwidget->dbm_store.max;
+		wwidget->min_db_draw = wwidget->dbm_store.min;
+		//wwidget->base_db_offset = -50;
+			// wwidget->min_db_draw = SPECTOOL_RSSI_CONVERT(wwidget->amp_offset_mdbm, wwidget->amp_res_mdbm, 0);
+			// printf("debug - min db draw %d\n", wwidget->min_db_draw);
+		//wwidget->min_db_draw = -95;
+		//}
 
 	} else if (wwidget->sweepcache != NULL && sweep != NULL) {
 		spectool_cache_append(wwidget->sweepcache, sweep);
@@ -135,7 +139,9 @@ static void spectool_widget_wdr_sweep(int slot, int mode,
 							   sweep->min_rssi_seen > 2 ? 
 							   sweep->min_rssi_seen - 2: sweep->min_rssi_seen);
 							   */
-		wwidget->min_db_draw = -95;
+		// Patch: now dBm draw and offset are set from the GUI
+		//wwidget->min_db_draw = -95;
+		wwidget->min_db_draw = wwidget->dbm_store.min;
 	}
 
 	/* Call the secondary sweep handler */
@@ -1066,3 +1072,19 @@ void spectool_widget_context_dbmlines(gpointer *aux) {
 	spectool_widget_update(GTK_WIDGET(wwidget));
 }
 
+// Patch: function to set the dBm ranges in a SpectoolWidget
+void spectool_widget_set_ranges(GtkWidget *widget, dbmranges ranges) {
+	SpectoolWidget *wwidget; 
+
+	// Check for correct object type
+	g_return_if_fail(widget != NULL);
+	g_return_if_fail(IS_SPECTOOL_WIDGET(widget));
+
+	// Check for correct ranges being read
+	g_return_if_fail(ranges.min >= -100 && ranges.min <= -70);
+	g_return_if_fail(ranges.max >= -50 && ranges.max <= 0);
+
+	wwidget = SPECTOOL_WIDGET(widget);
+
+	wwidget->dbm_store=ranges;
+}

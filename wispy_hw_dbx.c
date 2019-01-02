@@ -352,7 +352,7 @@ void wispydbx_add_supportedranges(int *num_ranges, spectool_sample_sweep **range
 		model == WISPYDBx_MODEL_DBxV2 ||
 		model == WISPYDBx_MODEL_DBxV3) {
 		// DBX devices get 2.4, 2.4 turbo, 5, 5-1, 5-2, 5-3
-		*num_ranges = 6; 
+		*num_ranges = 8; // Patch: increased by 2 the number of ranges for WiSpy DBx devices (it was 6)
 	} else if (model == WISPYDBx_MODEL_24i ||
 			   model == WISPYDBx_MODEL_24xV2) {
 		// 24i and x are 2.4 only, and get just the 2.4 and 2.4 turbo
@@ -401,6 +401,16 @@ void wispydbx_add_supportedranges(int *num_ranges, spectool_sample_sweep **range
 		wispydbx_create_settings_from_preset(&((*ranges)[5]),
 											 "UNII Low/Mid (ch. 149-165)", 5725.0f, 5836.0f, 
 											 375.0f, 428, model);
+		// Patch: add a full 5 GHz range, including DSRC frequencies (U-NII-4)
+		wispydbx_create_settings_from_preset(&((*ranges)[6]),
+											 "UNII Low/Mid/DSRC (ch. 149-184)", 5150.0f, 5925.0f, 
+											 1497.070f, 428, model);
+		// Patch: add a DSCR/ITS range (U-NII-4 only) - the frequency resolution parameter actually 
+		//  influences the accuracy at which frequencies are read and requires more investigation/fine-tuning
+		//        setting default value from https://support.metageek.com/hc/en-us/articles/203802010-Wi-Spy-Data-Sheet
+		wispydbx_create_settings_from_preset(&((*ranges)[7]),
+											 "UNII DSRC/ITS (ch. 172-184)", 5850.0f, 5925.0f, 
+											 464.286f, 428, model);
 	}
 
 	if (model == WISPYDBx_MODEL_900x ||

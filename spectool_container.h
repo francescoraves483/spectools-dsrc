@@ -283,6 +283,16 @@ static char *chan_text_5[] = {
 	"149", "153", "157", "161", "165"
 };
 
+// Add ITS frequencies (patch)
+static int chan_freqs_ITS[] = {
+	5860000, 5870000, 5880000, 5890000, 5900000, 5910000, 5920000
+};
+
+// Add ITS frequencies (patch)
+static char *chan_text_ITS[] = {
+	"172","174","176","178","180","182","184"
+};
+
 static int chan_freqs_900[] = {
 	905000, 910000, 915000, 920000, 925000
 };
@@ -298,8 +308,15 @@ static struct spectool_channels channel_list[] = {
 	{ "802.11a", 5100000, 5832000, 24, chan_freqs_5, 20000, chan_text_5 },
 	{ "802.11a UN-II", 5100000, 5483000, 14, chan_freqs_5, 20000, chan_text_5 },
 	{ "900 ISM", 902000, 927000, 5, chan_freqs_900, 5000, chan_text_900 },
+	{ "802.11p", 5860000, 5920000, 7, chan_freqs_ITS, 10000, chan_text_ITS }, // Add ITS frequencies (patch)
 	{ NULL, 0, 0, 0, NULL, 0, NULL }
 };
+
+// Patch: struct definition for managing the min and max dBm settings
+typedef struct _dbmranges {
+	int min;
+	int max;
+} dbmranges;
 
 #endif
 

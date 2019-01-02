@@ -83,6 +83,9 @@ struct _SpectoolWidget {
 	/* Bottom of db graph, min sample reported */
 	int min_db_draw;
 
+	// Patch: added to store in a SpectoolWidget the dBm ranges read from the GUI
+	dbmranges dbm_store;
+
 	/* Conversion data */
 	int amp_offset_mdbm;
 	int amp_res_mdbm;
@@ -201,6 +204,9 @@ extern inline int spectool_widget_find_chan_pt(SpectoolWidget *wwidget, int x, i
 void spectool_widget_context_channels(gpointer *aux);
 void spectool_widget_context_dbm(gpointer *aux);
 void spectool_widget_context_dbmlines(gpointer *aux);
+
+// Patch: function for setting min and max dBm ranges on a SpectoolWidget object
+void spectool_widget_set_ranges(GtkWidget *widget, dbmranges ranges);
 
 /* Color space conversion tools */
 extern inline void rgb_to_hsv(double r, double g, double b, 
